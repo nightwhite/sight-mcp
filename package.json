@@ -1,7 +1,7 @@
 {
   "name": "sight-mcp",
   "version": "1.0.0",
-  "description": "An OpenAI-compatible MCP server for image and video analysis with advanced AI vision models",
+  "description": "MCP server for AI-powered image and video analysis - supports OpenAI, Claude, and multimodal vision APIs with local file and URL processing",
   "module": "index.ts",
   "type": "module",
   "private": false,
@@ -50,7 +50,20 @@
     "image-analysis",
     "video-analysis",
     "openai",
-    "multimodal"
+    "claude",
+    "anthropic",
+    "multimodal",
+    "gpt-4",
+    "gpt-4o",
+    "claude-3-5-sonnet",
+    "image-recognition",
+    "video-understanding",
+    "computer-vision",
+    "mcp-server",
+    "model-context-protocol",
+    "ai-vision",
+    "visual-ai",
+    "media-analysis"
   ],
   "author": "Your Name",
   "license": "MIT"
