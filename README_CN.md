@@ -1,26 +1,21 @@
 # Sight MCP - AI 视觉分析服务器
 
-兼容 OpenAI 格式的 MCP 图像和视频分析服务器。支持任何使用 OpenAI 格式的视觉 API。
-
-**只需配置 Claude Desktop 即可使用 - 无需安装！**
+为 Claude Desktop 提供 AI 视觉功能的 MCP 服务器。支持使用 OpenAI GPT-4o、Claude 或任何兼容的视觉 API 分析图像和视频。
 
 ## 功能特性
 
 - **🖼️ 图像分析**: 分析 PNG、JPG、JPEG 文件（最大 5MB）
 - **🎥 视频分析**: 分析 MP4、MOV、M4V 文件（最大 8MB）
 - **🌐 远程 URL 支持**: 处理来自 HTTP/HTTPS URL 的图像和视频
-- **📁 本地文件处理**: 安全文件验证和 Base64 编码
-- **🔄 重试机制**: 内置指数退避确保 API 可靠性
+- **🔧 多 API 支持**: 兼容 OpenAI、Anthropic 和其他兼容 API
+- **📁 本地文件处理**: 安全文件验证和自动编码
 - **🛡️ 错误处理**: 全面的错误管理和验证
-- **🧪 完整测试覆盖**: 包含单元测试和集成测试
 
-## 快速开始
+## 快速配置
 
 ### Claude Desktop 配置
 
-只需在你的 Claude Desktop 配置中添加这个（`~/Library/Application Support/Claude/claude_desktop_config.json`）：
-
-**npx 方式（无需安装，推荐）：**
+在你的 Claude Desktop 配置中添加这个（`~/Library/Application Support/Claude/claude_desktop_config.json`）：
 
 ```json
 {
@@ -30,7 +25,7 @@
       "command": "npx",
       "args": ["-y", "sight-mcp"],
       "env": {
-        "OPENAI_API_KEY": "your-api-key-here",
+        "OPENAI_API_KEY": "your-openai-api-key",
         "API_URL": "https://api.openai.com/v1/chat/completions",
         "MODEL": "gpt-4o"
       }
@@ -39,147 +34,108 @@
 }
 ```
 
-### 兼容的 API 提供商
+### API 提供商配置
 
-支持任何 OpenAI 兼容的 API：
-
-```json
-{
-  "env": {
-    "OPENAI_API_KEY": "your-key",
-    "API_URL": "https://api.openai.com/v1/chat/completions",
-    "MODEL": "gpt-4o"
-  }
-}
-```
-
-```json
-{
-  "env": {
-    "OPENAI_API_KEY": "your-key",
-    "API_URL": "https://api.anthropic.com/v1/messages",
-    "MODEL": "claude-3-5-sonnet-20241022"
-  }
-}
-```
-
-**环境变量说明：**
+**必需环境变量:**
 - `OPENAI_API_KEY` (必需): 你的 API 密钥
-- `API_URL` (可选): API 端点（默认：OpenAI）
-- `MODEL` (可选): 模型名称（默认：`gpt-4o`）
+- `API_URL` (必需): API 端点 URL
+- `MODEL` (必需): 模型名称
+
+#### OpenAI GPT-4o
+```json
+"env": {
+  "OPENAI_API_KEY": "sk-your-openai-key",
+  "API_URL": "https://api.openai.com/v1/chat/completions",
+  "MODEL": "gpt-4o"
+}
+```
+
+#### Anthropic Claude
+```json
+"env": {
+  "OPENAI_API_KEY": "sk-ant-your-claude-key",
+  "API_URL": "https://api.anthropic.com/v1/messages",
+  "MODEL": "claude-3-5-sonnet-20241022"
+}
+```
+
+#### 智谱 AI GLM-4.5v
+```json
+"env": {
+  "OPENAI_API_KEY": "your-zhipu-api-key",
+  "API_URL": "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+  "MODEL": "glm-4v"
+}
+```
+
+配置完成后重启 Claude Desktop 即可使用！
 
 ## 使用方法
 
-### 图像分析
+配置完成后，你可以在 Claude 中这样使用：
 
-```typescript
-// 示例：分析本地图像
-const result = await mcp.call("analyze_image", {
-  image: "/path/to/image.png",
-  prompt: "描述这张图像中的内容，包括对象、颜色和构图。"
-});
+### 图像分析
+```
+分析这张图片：/path/to/photo.jpg
+```
+
+```
+这张截图里有什么？/Users/desktop/screen.png
 ```
 
 ### 视频分析
-
-```typescript
-// 示例：分析远程视频
-const result = await mcp.call("analyze_video", {
-  video: "https://example.com/video.mp4",
-  prompt: "分析这个视频并描述主要动作、场景和任何值得注意的事件。"
-});
+```
+分析 https://example.com/demo.mp4 这个视频并描述内容
 ```
 
-## 工具
-
-### `analyze_image`
-
-使用高级 AI 视觉模型分析图像。
-
-**参数：**
-
-- `image` (string): 图像的本地文件路径或远程 URL（PNG、JPG、JPEG，最大 5MB）
-- `prompt` (string): 详细说明要从图像中分析或提取什么内容
-
-### `analyze_video`
-
-使用高级 AI 视觉模型分析视频。
-
-**参数：**
-
-- `video` (string): 视频的本地文件路径或远程 URL（MP4、MOV、M4V，最大 8MB）
-- `prompt` (string): 详细说明要从视频中分析或提取什么内容
-
-## 开发
+#### 在 Claude Code 中使用
+在 Claude Code 中，使用以下命令添加这个 MCP 服务器：
 
 ```bash
-# 克隆并运行
-git clone https://github.com/nightwhite/sight-mcp.git
-cd sight-mcp
-bun install
-bun run dev
-
-# 测试
-bun test
+claude mcp add sight-mcp --env OPENAI_API_KEY=your_api_key --env API_URL=https://api.openai.com/v1/chat/completions --env MODEL=gpt-4o -- npx -y sight-mcp
 ```
 
-## 配置选项
+或其他提供商：
 
-所有配置都通过 Claude Desktop 配置中的环境变量完成：
+```bash
+# Anthropic Claude
+claude mcp add sight-mcp --env OPENAI_API_KEY=your_claude_key --env API_URL=https://api.anthropic.com/v1/messages --env MODEL=claude-3-5-sonnet-20241022 -- npx -y sight-mcp
 
-- `OPENAI_API_KEY` (必需): 你的 API 密钥
-- `API_URL` (可选): API 端点（默认：OpenAI）
-- `MODEL` (可选): 模型名称（默认：`gpt-4o`）
+# 智谱 AI
+claude mcp add sight-mcp --env OPENAI_API_KEY=your_zhipu_key --env API_URL=https://open.bigmodel.cn/api/paas/v4/chat/completions --env MODEL=glm-4v -- npx -y sight-mcp
+```
 
-## 架构
-
-- **FileService**: 处理文件验证、处理和编码
-- **ChatService**: 管理带有重试逻辑的 OpenAI API 通信
-- **ErrorHandler**: 提供统一的错误处理和响应格式化
-- **MCP Server**: 核心协议实现和工具注册
+添加后，在 Claude Code 对话中可直接使用这些工具：
+- `mcp__sight-mcp__analyze_image`
+- `mcp__sight-mcp__analyze_video`
 
 ## 支持的文件格式
 
 ### 图像
-
 - **格式**: PNG、JPG、JPEG
 - **最大大小**: 5MB
-- **处理**: 本地文件自动 Base64 编码
+- **来源**: 本地文件或 HTTP/HTTPS URL
 
 ### 视频
-
 - **格式**: MP4、MOV、M4V
 - **最大大小**: 8MB
-- **处理**: 远程文件直接 URL 传输
+- **来源**: 本地文件或 HTTP/HTTPS URL
 
-## 错误处理
+## 可用工具
 
-服务器为以下情况提供全面的错误处理：
+### `analyze_image`
+使用 AI 视觉模型分析图像。
 
-- 文件未找到或访问被拒绝
-- 不支持的文件格式
-- 文件大小超限
-- API 认证失败
-- 网络超时和重试
-- 无效参数
+**参数:**
+- `image` (string): 图像的本地文件路径或远程 URL
+- `prompt` (string): 你想了解的关于图像的内容
 
-## 贡献
+### `analyze_video`
+使用 AI 视觉模型分析视频。
 
-1. Fork 仓库
-2. 创建功能分支（`git checkout -b feature/amazing-feature`）
-3. 提交更改（`git commit -m 'Add amazing feature'`）
-4. 推送到分支（`git push origin feature/amazing-feature`）
-5. 打开 Pull Request
-
-## 许可证
-
-本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件。
-
-## 支持
-
-- 🐛 **错误报告**: [GitHub Issues](https://github.com/nightwhite/sight-mcp/issues)
-- 💡 **功能请求**: [GitHub Discussions](https://github.com/nightwhite/sight-mcp/discussions)
-- 📧 **安全问题**: 请通过私人 GitHub issue 报告
+**参数:**
+- `video` (string): 视频的本地文件路径或远程 URL
+- `prompt` (string): 你想了解的关于视频的内容
 
 ---
 

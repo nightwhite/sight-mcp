@@ -1,8 +1,6 @@
 # Sight MCP - AI Vision Analysis Server
 
-An OpenAI-compatible MCP server for image and video analysis. Works with any vision API that supports OpenAI's format.
-
-**Just configure Claude Desktop and start using - no installation needed!**
+A powerful MCP server that brings AI vision capabilities to Claude Desktop. Analyze images and videos using OpenAI GPT-4o, Claude, or any compatible vision API.
 
 **中文版本**: See [README_CN.md](./README_CN.md) for the full Chinese documentation.
 
@@ -11,18 +9,28 @@ An OpenAI-compatible MCP server for image and video analysis. Works with any vis
 - **🖼️ Image Analysis**: Analyze PNG, JPG, JPEG files (max 5MB)
 - **🎥 Video Analysis**: Analyze MP4, MOV, M4V files (max 8MB)
 - **🌐 Remote URL Support**: Process images and videos from HTTP/HTTPS URLs
-- **📁 Local File Processing**: Secure file validation and Base64 encoding
-- **🔄 Retry Mechanism**: Built-in exponential backoff for API reliability
+- **🔧 Multi-API Support**: Works with OpenAI, Anthropic, and compatible APIs
+- **📁 Local File Processing**: Secure file validation and automatic encoding
 - **🛡️ Error Handling**: Comprehensive error management and validation
-- **🧪 Full Test Coverage**: Unit and integration tests included
 
 ## Quick Start
 
-### Claude Desktop Setup
+### 1. Install the Server
 
-Just add this to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+**Option A: npx (Recommended - No Installation)**
+```bash
+# Just add to Claude Desktop config below - nothing to install!
+```
 
-**npx (no installation, recommended):**
+**Option B: Global Install**
+```bash
+npm install -g sight-mcp
+# Or: bun install -g sight-mcp
+```
+
+### 2. Configure Claude Desktop
+
+Add this to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 
 ```json
 {
@@ -32,7 +40,7 @@ Just add this to your Claude Desktop config (`~/Library/Application Support/Clau
       "command": "npx",
       "args": ["-y", "sight-mcp"],
       "env": {
-        "OPENAI_API_KEY": "your-api-key-here",
+        "OPENAI_API_KEY": "your-openai-api-key",
         "API_URL": "https://api.openai.com/v1/chat/completions",
         "MODEL": "gpt-4o"
       }
@@ -41,122 +49,153 @@ Just add this to your Claude Desktop config (`~/Library/Application Support/Clau
 }
 ```
 
-### Compatible API Providers
+### 3. Configure Your API Provider
 
-This works with any OpenAI-compatible API:
-
-```json
-{
-  "env": {
-    "OPENAI_API_KEY": "your-key",
-    "API_URL": "https://api.openai.com/v1/chat/completions",
-    "MODEL": "gpt-4o"
-  }
-}
-```
-
-```json
-{
-  "env": {
-    "OPENAI_API_KEY": "your-key",
-    "API_URL": "https://api.anthropic.com/v1/messages",
-    "MODEL": "claude-3-5-sonnet-20241022"
-  }
-}
-```
-
-**Environment Variables:**
+**Required Environment Variables:**
 - `OPENAI_API_KEY` (required): Your API key
-- `API_URL` (optional): API end point (default: OpenAI)
-- `MODEL` (optional): Model name (default: `gpt-4o`)
+- `API_URL` (required): API endpoint URL
+- `MODEL` (required): Model name
 
-## Usage
-
-### Image Analysis
-
-```typescript
-// Example: Analyze a local image
-const result = await mcp.call("analyze_image", {
-  image: "/path/to/image.png",
-  prompt: "Describe what you see in this image, including objects, colors, and composition."
-});
+#### OpenAI GPT-4o
+```json
+"env": {
+  "OPENAI_API_KEY": "sk-your-openai-key",
+  "API_URL": "https://api.openai.com/v1/chat/completions",
+  "MODEL": "gpt-4o"
+}
 ```
 
-### Video Analysis
-
-```typescript
-// Example: Analyze a remote video
-const result = await mcp.call("analyze_video", {
-  video: "https://example.com/video.mp4",
-  prompt: "Analyze this video and describe the main actions, scenes, and any notable events."
-});
+#### Anthropic Claude
+```json
+"env": {
+  "OPENAI_API_KEY": "sk-ant-your-claude-key",
+  "API_URL": "https://api.anthropic.com/v1/messages",
+  "MODEL": "claude-3-5-sonnet-20241022"
+}
 ```
 
-## Tools
+#### Zhipu AI GLM-4.5v
+```json
+"env": {
+  "OPENAI_API_KEY": "your-zhipu-api-key",
+  "API_URL": "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+  "MODEL": "glm-4v"
+}
+```
 
-### `analyze_image`
-Analyzes images using advanced AI vision models.
+#### Other Compatible APIs
+Any API that follows the OpenAI vision format will work. Just update the `API_URL` and `MODEL` accordingly.
 
-**Parameters:**
-- `image` (string): Local file path or remote URL to the image (PNG, JPG, JPEG, max 5MB)
-- `prompt` (string): Detailed description of what to analyze or extract from the image
+### 4. Restart Claude Desktop
 
-### `analyze_video`
-Analyzes videos using advanced AI vision models.
+After updating the config, restart Claude Desktop and you'll see the vision tools available!
 
-**Parameters:**
-- `video` (string): Local file path or remote URL to the video (MP4, MOV, M4V, max 8MB)
-- `prompt` (string): Detailed description of what to analyze or extract from the video
+### Usage Examples
 
-## Development
+Once configured, you can use these tools in Claude:
+
+#### Image Analysis
+```
+Analyze this image: /path/to/photo.jpg
+```
+
+```
+What do you see in this screenshot? /Users/desktop/screen.png
+```
+
+#### Video Analysis
+```
+Analyze the video at https://example.com/demo.mp4 and describe what happens
+```
+
+```
+What's in this video file? /path/to/recordings.mov
+```
+
+#### Using in Claude Code
+When using Claude Code, add this MCP server with:
 
 ```bash
-# Clone and run
-git clone https://github.com/nightwhite/sight-mcp.git
-cd sight-mcp
-bun install
-bun run dev
-
-# Test
-bun test
+claude mcp add sight-mcp --env OPENAI_API_KEY=your_api_key --env API_URL=https://api.openai.com/v1/chat/completions --env MODEL=gpt-4o -- npx -y sight-mcp
 ```
 
-## Configuration Options
+Or for different providers:
 
-All configuration is done through environment variables in your Claude Desktop config:
+```bash
+# Anthropic Claude
+claude mcp add sight-mcp --env OPENAI_API_KEY=your_claude_key --env API_URL=https://api.anthropic.com/v1/messages --env MODEL=claude-3-5-sonnet-20241022 -- npx -y sight-mcp
 
-- `OPENAI_API_KEY` (required): Your API key
-- `API_URL` (optional): API endpoint (default: OpenAI)
-- `MODEL` (optional): Model name (default: `gpt-4o`)
+# Zhipu AI
+claude mcp add sight-mcp --env OPENAI_API_KEY=your_zhipu_key --env API_URL=https://open.bigmodel.cn/api/paas/v4/chat/completions --env MODEL=glm-4v -- npx -y sight-mcp
+```
 
-## Architecture
-
-- **FileService**: Handles file validation, processing, and encoding
-- **ChatService**: Manages OpenAI API communication with retry logic
-- **ErrorHandler**: Provides unified error handling and response formatting
-- **MCP Server**: Core protocol implementation and tool registration
+After adding, the tools are available directly in Claude Code conversations as:
+- `mcp__sight-mcp__analyze_image`
+- `mcp__sight-mcp__analyze_video`
 
 ## Supported File Formats
 
 ### Images
 - **Formats**: PNG, JPG, JPEG
 - **Max Size**: 5MB
-- **Processing**: Automatic Base64 encoding for local files
+- **Source**: Local files or HTTP/HTTPS URLs
 
 ### Videos
 - **Formats**: MP4, MOV, M4V
 - **Max Size**: 8MB
-- **Processing**: Direct URL transmission for remote files
+- **Source**: Local files or HTTP/HTTPS URLs
 
-## Error Handling
+## Available Tools
 
-The server provides comprehensive error handling for:
-- File not found or access denied
-- Unsupported file formats
-- File size exceeded
-- API authentication failures
-- Network timeouts and retries
-- Invalid parameters
+### `analyze_image`
+Analyzes images using AI vision models.
+
+**Parameters:**
+- `image` (string): Local file path or remote URL to the image
+- `prompt` (string): What you want to know about the image
+
+### `analyze_video`
+Analyzes videos using AI vision models.
+
+**Parameters:**
+- `video` (string): Local file path or remote URL to the video
+- `prompt` (string): What you want to know about the video
+
+## Troubleshooting
+
+### Common Issues
+
+**"Server not found" error:**
+- Make sure Claude Desktop is restarted after config changes
+- Check that your API key is valid and has credits
+- Verify the `API_URL` is correct for your provider
+
+**"File too large" error:**
+- Images: Max 5MB
+- Videos: Max 8MB
+- Try compressing files or using URLs for larger files
+
+**"Unsupported format" error:**
+- Images: Use PNG, JPG, or JPEG
+- Videos: Use MP4, MOV, or M4V
+
+**API authentication errors:**
+- Double-check your `OPENAI_API_KEY`
+- Ensure the key has vision capabilities enabled
+- Verify the `API_URL` matches your provider
+
+### Debug Mode
+
+Add `"DEBUG": "true"` to your environment variables to see detailed logs:
+
+```json
+"env": {
+  "OPENAI_API_KEY": "your-key",
+  "API_URL": "https://api.openai.com/v1/chat/completions",
+  "MODEL": "gpt-4o",
+  "DEBUG": "true"
+}
+```
 
 ## Contributing
 
@@ -172,6 +211,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/nightwhite/sight-mcp/issues)
-- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/nightwhite/sight-mcp/discussions)
 - 📧 **Security Issues**: Please report via private GitHub issue
