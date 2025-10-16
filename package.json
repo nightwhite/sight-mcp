@@ -21,7 +21,7 @@
     }
   },
   "scripts": {
-    "build": "bun build --target node --outfile dist/index.js index.ts",
+    "build": "bun build --target node --outfile dist/index.js index.ts && echo '#!/usr/bin/env node' > dist/sight-mcp && echo 'import(\"./index.js\");' >> dist/sight-mcp",
     "build:binary": "mkdir -p dist && bun build --compile --outfile=dist/$npm_package_name index.ts",
     "show-package-name": "echo $npm_package_name",
     "start": "bun run index.ts",
