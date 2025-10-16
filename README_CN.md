@@ -75,7 +75,7 @@
 ```typescript
 // 示例：分析本地图像
 const result = await mcp.call("analyze_image", {
-  image_source: "/path/to/image.png",
+  image: "/path/to/image.png",
   prompt: "描述这张图像中的内容，包括对象、颜色和构图。"
 });
 ```
@@ -85,7 +85,7 @@ const result = await mcp.call("analyze_image", {
 ```typescript
 // 示例：分析远程视频
 const result = await mcp.call("analyze_video", {
-  video_source: "https://example.com/video.mp4",
+  video: "https://example.com/video.mp4",
   prompt: "分析这个视频并描述主要动作、场景和任何值得注意的事件。"
 });
 ```
@@ -98,7 +98,7 @@ const result = await mcp.call("analyze_video", {
 
 **参数：**
 
-- `image_source` (string): 图像的本地文件路径或远程 URL（PNG、JPG、JPEG，最大 5MB）
+- `image` (string): 图像的本地文件路径或远程 URL（PNG、JPG、JPEG，最大 5MB）
 - `prompt` (string): 详细说明要从图像中分析或提取什么内容
 
 ### `analyze_video`
@@ -107,7 +107,7 @@ const result = await mcp.call("analyze_video", {
 
 **参数：**
 
-- `video_source` (string): 视频的本地文件路径或远程 URL（MP4、MOV、M4V，最大 8MB）
+- `video` (string): 视频的本地文件路径或远程 URL（MP4、MOV、M4V，最大 8MB）
 - `prompt` (string): 详细说明要从视频中分析或提取什么内容
 
 ## 开发

@@ -77,7 +77,7 @@ This works with any OpenAI-compatible API:
 ```typescript
 // Example: Analyze a local image
 const result = await mcp.call("analyze_image", {
-  image_source: "/path/to/image.png",
+  image: "/path/to/image.png",
   prompt: "Describe what you see in this image, including objects, colors, and composition."
 });
 ```
@@ -87,7 +87,7 @@ const result = await mcp.call("analyze_image", {
 ```typescript
 // Example: Analyze a remote video
 const result = await mcp.call("analyze_video", {
-  video_source: "https://example.com/video.mp4",
+  video: "https://example.com/video.mp4",
   prompt: "Analyze this video and describe the main actions, scenes, and any notable events."
 });
 ```
@@ -98,14 +98,14 @@ const result = await mcp.call("analyze_video", {
 Analyzes images using advanced AI vision models.
 
 **Parameters:**
-- `image_source` (string): Local file path or remote URL to the image (PNG, JPG, JPEG, max 5MB)
+- `image` (string): Local file path or remote URL to the image (PNG, JPG, JPEG, max 5MB)
 - `prompt` (string): Detailed description of what to analyze or extract from the image
 
 ### `analyze_video`
 Analyzes videos using advanced AI vision models.
 
 **Parameters:**
-- `video_source` (string): Local file path or remote URL to the video (MP4, MOV, M4V, max 8MB)
+- `video` (string): Local file path or remote URL to the video (MP4, MOV, M4V, max 8MB)
 - `prompt` (string): Detailed description of what to analyze or extract from the video
 
 ## Development
