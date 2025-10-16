@@ -1,19 +1,57 @@
 {
   "name": "sight-mcp",
+  "version": "1.0.0",
+  "description": "An OpenAI-compatible MCP server for image and video analysis with advanced AI vision models",
   "module": "index.ts",
   "type": "module",
-  "private": true,
+  "private": false,
+  "bin": {
+    "sight-mcp": "./dist/sight-mcp"
+  },
+  "files": [
+    "dist/**",
+    "src/**",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
   "scripts": {
-    "build": "mkdir -p dist && bun build --compile --outfile=dist/$npm_package_name index.ts",
-    "show-package-name": "echo $npm_package_name"
+    "build": "bun build --target node --outfile dist/index.js index.ts",
+    "build:binary": "mkdir -p dist && bun build --compile --outfile=dist/$npm_package_name index.ts",
+    "show-package-name": "echo $npm_package_name",
+    "start": "bun run index.ts",
+    "dev": "bun --watch index.ts",
+    "prepublishOnly": "bun run build",
+    "test": "bun test",
+    "test:integration": "bun test test/integration/",
+    "test:watch": "bun test --watch"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/node": "^20.0.0"
   },
   "peerDependencies": {
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.0"
-  }
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "zod": "^3.22.0",
+    "dotenv": "^16.4.5"
+  },
+  "keywords": [
+    "mcp",
+    "ai",
+    "vision",
+    "image-analysis",
+    "video-analysis",
+    "openai",
+    "multimodal"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
 }

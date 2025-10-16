@@ -1,75 +1,84 @@
 import {
   McpServer,
-  ResourceTemplate,
 } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { ChatService } from "./src/services/ChatService.js";
+import { FileService } from "./src/services/FileService.js";
 
-// Create an MCP server
+const API_URL = process.env.API_URL || "https://api.openai.com/v1/chat/completions";
+const MODEL = process.env.MODEL || "gpt-4o";
+const API_KEY = process.env.OPENAI_API_KEY;
+
+if (!API_KEY) {
+  throw new Error("OPENAI_API_KEY environment variable is required");
+}
+
 const server = new McpServer({
-  name: "ServerName",
+  name: "sight-mcp",
   version: "1.0.0",
 });
 
-// Example: Add a BMI calculator
-server.registerTool(
-  "calculate_bmi",
+const chatService = new ChatService(API_URL, MODEL, API_KEY);
+
+server.tool(
+  "analyze_image",
+  "Analyze an image using advanced AI vision models with comprehensive understanding capabilities. Supports both local files and remote URL. Maximum file size: 5MB",
   {
-    title: "BMI Calculator",
-    description: "Calculate BMI to see if you are overweight.",
-    inputSchema: {
-      height: z.number().describe("Height in cm"),
-      weight: z.number().describe("Weight in kg"),
-    },
+    image_source: z.string().describe("Local file path or remote URL to the image (supports PNG, JPG, JPEG)"),
+    prompt: z.string().describe("Detailed text prompt describing what to analyze, extract, or understand from the image"),
   },
-  async ({ height, weight }) => {
-    const heightInMeter = height / 100;
-    const bmi = weight / (heightInMeter * heightInMeter);
-    return {
-      content: [{ type: "text", text: String(bmi) }],
-    };
+  async ({ image_source, prompt }) => {
+    try {
+      const { dataUrl, fileInfo } = await FileService.processFile(image_source);
+      const imageUrl = dataUrl || fileInfo.path;
+
+      const analysis = await chatService.analyzeImage(imageUrl, prompt);
+
+      return {
+        content: [{ type: "text", text: analysis }],
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        return {
+          content: [{ type: "text", text: `Error: ${error.message}` }],
+        };
+      }
+      return {
+        content: [{ type: "text", text: `Unknown error occurred: ${String(error)}` }],
+      };
+    }
   },
 );
 
-// Example: Add a prompt
-server.registerPrompt(
-  "greeting",
+server.tool(
+  "analyze_video",
+  "Analyze a video using advanced AI vision models with comprehensive understanding capabilities. Supports both local files and remote URL. Maximum file size: 8MB",
   {
-    title: "Greeting Prompt",
-    description: "Greet the user with a friendly message.",
-    argsSchema: {
-      name: z.string().describe("The name of the user"),
-    },
+    video_source: z.string().describe("Local file path or remote URL to the video (supports MP4, MOV, M4V)"),
+    prompt: z.string().describe("Detailed text prompt describing what to analyze, extract, or understand from the video"),
   },
-  ({ name }) => ({
-    messages: [
-      {
-        role: "user",
-        content: {
-          type: "text",
-          text: `Hello, ${name}! How can I help you?`,
-        },
-      },
-    ],
-  }),
-);
+  async ({ video_source, prompt }) => {
+    try {
+      const { dataUrl, fileInfo } = await FileService.processFile(video_source);
+      const videoUrl = dataUrl || fileInfo.path;
 
-// Example: Add a dynamic greeting resource
-server.registerResource(
-  "greeting",
-  new ResourceTemplate("greeting://{name}", { list: undefined }),
-  {
-    title: "Greeting Resource",
-    description: "Get a personalized greeting message.",
+      const analysis = await chatService.analyzeVideo(videoUrl, prompt);
+
+      return {
+        content: [{ type: "text", text: analysis }],
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        return {
+          content: [{ type: "text", text: `Error: ${error.message}` }],
+        };
+      }
+      return {
+        content: [{ type: "text", text: `Unknown error occurred: ${String(error)}` }],
+      };
+    }
   },
-  async (uri, { name }) => ({
-    contents: [
-      {
-        uri: uri.href,
-        text: `Hello, ${name}!`,
-      },
-    ],
-  }),
 );
 
 async function main() {

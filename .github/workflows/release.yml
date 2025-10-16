@@ -1,0 +1,192 @@
+name: Release Automation
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.0)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Is this a prerelease?'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.create_release.outputs.id }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run tests
+        run: bun run test
+
+      - name: Build project
+        run: bun run build
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          release_name: Release v${{ github.event.inputs.version }}
+          body: |
+            ## Changes in v${{ github.event.inputs.version }}
+
+            ### Features
+            - OpenAI-compatible image and video analysis
+            - MCP server implementation with proper error handling
+            - Support for local files and remote URLs
+            - Comprehensive test coverage
+
+            ### Supported Formats
+            - Images: PNG, JPG, JPEG (max 5MB)
+            - Videos: MP4, MOV, M4V (max 8MB)
+
+            ### Installation
+            ```bash
+            npm install -g sight-mcp@${{ github.event.inputs.version }}
+            ```
+
+            ### Configuration
+            Set your OpenAI API key:
+            ```bash
+            export OPENAI_API_KEY=your-api-key
+            ```
+
+            ### Usage
+            Add to Claude Desktop configuration:
+            ```json
+            {
+              "mcpServers": {
+                "sight-mcp": {
+                  "command": "sight-mcp"
+                }
+              }
+            }
+            ```
+          draft: false
+          prerelease: ${{ github.event.inputs.prerelease }}
+
+  publish-assets:
+    name: Publish Release Assets
+    runs-on: ubuntu-latest
+    needs: create-release
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build project
+        run: bun run build
+
+      - name: Upload executable as release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./dist/sight-mcp
+          asset_name: sight-mcp
+          asset_content_type: application/octet-stream
+
+      - name: Create cross-platform packages
+        run: |
+          mkdir -p packages
+
+          # Create tar.gz for Linux/macOS
+          tar -czf packages/sight-mcp-v${{ github.event.inputs.version }}-linux-x64.tar.gz -C dist sight-mcp
+
+          # Create zip for Windows
+          cd dist
+          zip ../packages/sight-mcp-v${{ github.event.inputs.version }}-win-x64.zip sight-mcp
+          cd ..
+
+      - name: Upload platform-specific packages
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./packages/sight-mcp-v${{ github.event.inputs.version }}-linux-x64.tar.gz
+          asset_name: sight-mcp-v${{ github.event.inputs.version }}-linux-x64.tar.gz
+          asset_content_type: application/gzip
+      - name: Upload Windows package
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./packages/sight-mcp-v${{ github.event.inputs.version }}-win-x64.zip
+          asset_name: sight-mcp-v${{ github.event.inputs.version }}-win-x64.zip
+          asset_content_type: application/zip
+
+  publish-npm:
+    name: Publish to NPM
+    runs-on: ubuntu-latest
+    needs: [ create-release, publish-assets ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Configure NPM registry
+        run: |
+          echo "@${{ github.repository_owner }}:registry=https://registry.npmjs.org/" > ~/.npmrc
+          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+
+      - name: Update package.json for publishing
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          bun package.json set version $VERSION
+          bun package.json set main dist/sight-mcp
+          bun package.json set bin dist/sight-mcp
+          bun package.json set files '["dist/**", "README.md", "LICENSE"]'
+          bun package.json delete type
+          bun package.json delete module
+
+          # Add npm scripts for better user experience
+          bun package.json set scripts.test "bun test"
+          bun package.json set scripts.build "bun run build"
+
+      - name: Publish to NPM
+        run: npm publish --access public --tag ${{ github.event.inputs.prerelease == 'true' && 'next' || 'latest' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
