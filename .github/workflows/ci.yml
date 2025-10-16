@@ -27,6 +27,9 @@ jobs:
       - name: Build project
         run: bun run build
 
+      - name: Make executable
+        run: chmod +x dist/sight-mcp
+
       - name: Run tests
         run: bun run test
 
