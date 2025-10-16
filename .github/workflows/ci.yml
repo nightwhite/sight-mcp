@@ -93,14 +93,14 @@ jobs:
         run: |
           # Update version to match release tag
           VERSION=$(echo ${{ github.ref_name }} | sed 's/^v//')
-          bun package.json set version $VERSION
+          npm version $VERSION --no-git-tag-version
 
           # Ensure main field points to built file
-          bun package.json set main dist/sight-mcp
-          bun package.json set bin dist/sight-mcp
-          bun package.json set files '["dist/**", "README.md", "LICENSE"]'
-          bun package.json delete type
-          bun package.json delete module
+          npm pkg set main=dist/index.js
+          npm pkg set bin=dist/sight-mcp
+          npm pkg set files='["dist/**", "README.md", "LICENSE"]'
+          npm pkg delete type
+          npm pkg delete module
 
       - name: Publish to NPM
         run: npm publish --access public
