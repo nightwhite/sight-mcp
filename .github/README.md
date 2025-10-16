@@ -84,7 +84,7 @@ npm install -g sight-mcp@1.0.0
 ### From GitHub Releases
 ```bash
 # Download the executable from releases
-wget https://github.com/yourusername/sight-mcp/releases/latest/download/sight-mcp
+wget https://github.com/nightwhite/sight-mcp/releases/latest/download/sight-mcp
 chmod +x sight-mcp
 sudo mv sight-mcp /usr/local/bin/
 ```

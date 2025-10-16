@@ -20,6 +20,8 @@
 
 只需在你的 Claude Desktop 配置中添加这个（`~/Library/Application Support/Claude/claude_desktop_config.json`）：
 
+**npx 方式（无需安装，推荐）：**
+
 ```json
 {
   "mcpServers": {
@@ -112,7 +114,7 @@ const result = await mcp.call("analyze_video", {
 
 ```bash
 # 克隆并运行
-git clone https://github.com/yourusername/sight-mcp.git
+git clone https://github.com/nightwhite/sight-mcp.git
 cd sight-mcp
 bun install
 bun run dev
@@ -175,8 +177,8 @@ bun test
 
 ## 支持
 
-- 🐛 **错误报告**: [GitHub Issues](https://github.com/yourusername/sight-mcp/issues)
-- 💡 **功能请求**: [GitHub Discussions](https://github.com/yourusername/sight-mcp/discussions)
+- 🐛 **错误报告**: [GitHub Issues](https://github.com/nightwhite/sight-mcp/issues)
+- 💡 **功能请求**: [GitHub Discussions](https://github.com/nightwhite/sight-mcp/discussions)
 - 📧 **安全问题**: 请通过私人 GitHub issue 报告
 
 ---
